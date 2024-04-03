@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <title>Grupo 2 - Finanzas e Ingeniería Económica</title>
+  </head>
+  <body>
+    <div id="layout">
+      <header id="header">
+        <h1>Elige tu depósito a plazo</h1>
+        <ul>
+          <li>Ingresar</li>
+          <li>Ayuda</li>
+        </ul>
+      </header>
+      <div id="plan">
+        <h2>Valor de depósito en soles</h2>
+        <span id="valor-deposito-actual">1000</span>
+        <input
+          type="range"
+          min="1000"
+          max="600000"
+          value="1000"
+          step="1000"
+          id="valor-deposito"
+        />
+        <hr />
+        <h2>Plazo en días</h2>
+        <span id="plazo-dias-actual">90</span>
+        <input
+          type="range"
+          min="90"
+          max="360"
+          value="90"
+          step="90"
+          id="plazo-dias"
+          oninput="updateSlider(this.value)"
+        />
+        <hr />
+        <h2>Ubicación: Lima Callao</h2>
+      </div>
+
+      <div id="bancos">
+        <table>
+          <tr>
+            <th><h1>Banco</h1></th>
+            <th><h1>TREA</h1></th>
+            <th><h1>Ganancia Total</h1></th>
+            <th><h1>Ganancia Mensual</h1></th>
+          </tr>
+          <tr>
+            <td><img src="pichincha.png" width="150px" /></td>
+            <td id="trea-pichincha">-</td>
+            <td id="ganancia-pichincha-total">-</td>
+            <td id="ganancia-pichincha-mensual">-</td>
+          </tr>
+          <tr>
+            <td><img src="BBVA.png" width="100px" /></td>
+            <td id="trea-bbva">-</td>
+            <td id="ganancia-bbva-total">-</td>
+            <td id="ganancia-bbva-mensual">-</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <script>
+      function updateSlider(value) {
+        // Si el valor es 270, cambia al siguiente valor permitido
+        if (value == 270) {
+          document.getElementById("plazo-dias").value = 360;
+        }
+      }
+      document.addEventListener("DOMContentLoaded", function () {
+        const valorDepositoInput = document.getElementById("valor-deposito");
+        const valorDepositoOutput = document.getElementById(
+          "valor-deposito-actual"
+        );
+        const plazoDiasInput = document.getElementById("plazo-dias");
+        const plazoDiasOutput = document.getElementById("plazo-dias-actual");
+
+        valorDepositoInput.addEventListener("input", function () {
+          valorDepositoOutput.textContent = valorDepositoInput.value;
+          actualizarGanancias();
+        });
+
+        plazoDiasInput.addEventListener("input", function () {
+          plazoDiasOutput.textContent = plazoDiasInput.value;
+          actualizarGanancias();
+        });
+
+        // Llamar a actualizarGanancias al cargar la página para calcular automáticamente con los primeros datos iniciales
+        actualizarGanancias();
+
+        // Función para calcular y actualizar la ganancia total y mensual
+        function actualizarGanancias() {
+          const tasaInteresPichincha = determinarTasaPichincha(
+            parseFloat(valorDepositoInput.value),
+            parseFloat(plazoDiasInput.value)
+          );
+          const tasaInteresBBVA = determinarTasaBBVA(
+            parseFloat(valorDepositoInput.value),
+            parseFloat(plazoDiasInput.value)
+          );
+
+          const valorDeposito = parseFloat(valorDepositoInput.value);
+          const plazoDias = parseFloat(plazoDiasInput.value);
+
+          // Calcular la ganancia total y mensual para Pichincha
+          const gananciaTotalPichincha = calcularGananciaTotal(
+            valorDeposito,
+            plazoDias,
+            tasaInteresPichincha
+          );
+          const gananciaMensualPichincha =
+            gananciaTotalPichincha / (plazoDias / 30);
+
+          // Calcular la ganancia total y mensual para BBVA
+          const gananciaTotalBBVA = calcularGananciaTotal(
+            valorDeposito,
+            plazoDias,
+            tasaInteresBBVA
+          );
+          const gananciaMensualBBVA = gananciaTotalBBVA / (plazoDias / 30);
+
+          // Actualizar los valores en la tabla
+          document.getElementById("ganancia-pichincha-total").textContent =
+            gananciaTotalPichincha.toFixed(2);
+          document.getElementById("ganancia-pichincha-mensual").textContent =
+            gananciaMensualPichincha.toFixed(2);
+          document.getElementById("ganancia-bbva-total").textContent =
+            gananciaTotalBBVA.toFixed(2);
+          document.getElementById("ganancia-bbva-mensual").textContent =
+            gananciaMensualBBVA.toFixed(2);
+
+          document.getElementById("trea-pichincha").textContent =
+            (tasaInteresPichincha * 100).toFixed(2) + "%";
+          document.getElementById("trea-bbva").textContent =
+            (tasaInteresBBVA * 100).toFixed(2) + "%";
+        }
+
+        // Función para calcular la ganancia total
+        function calcularGananciaTotal(valorDeposito, plazoDias, tasaInteres) {
+          return valorDeposito * tasaInteres * (plazoDias / 360);
+        }
+
+        // Función para determinar la tasa de interés de Pichincha según el monto depositado y el plazo en días
+        function determinarTasaPichincha(montoDeposito, plazoDias) {
+          if (montoDeposito >= 1000 && montoDeposito < 50000) {
+            if (plazoDias === 90) {
+              return 0.06; // 6.00% para 90 días
+            } else if (plazoDias === 180) {
+              return 0.055; // 5.50% para 180 días
+            } else if (plazoDias === 360) {
+              return 0.0525; // 5.25% para 360 días
+            }
+          } else if (montoDeposito >= 50000 && montoDeposito < 250000) {
+            if (plazoDias === 90) {
+              return 0.065; // 6.50% para 90 días
+            } else if (plazoDias === 180) {
+              return 0.0575; // 5.75% para 180 días
+            } else if (plazoDias === 360) {
+              return 0.055; // 5.50% para 360 días
+            }
+          } else if (montoDeposito >= 250000 && montoDeposito < 500000) {
+            if (plazoDias === 90) {
+              return 0.0675; // 6.75% para 90 días
+            } else if (plazoDias === 180) {
+              return 0.06; // 6.00% para 180 días
+            } else if (plazoDias === 360) {
+              return 0.0575; // 5.75% para 360 días
+            }
+          } else if (montoDeposito >= 500000) {
+            if (plazoDias === 90) {
+              return 0.0675; // 6.75% para 90 días
+            } else if (plazoDias === 180) {
+              return 0.06; // 6.00% para 180 días
+            } else if (plazoDias === 360) {
+              return 0.0575; // 5.75% para 360 días
+            }
+          }
+          // Valor predeterminado en caso de que no se cumplan las condiciones anteriores
+          return 0.06; // 6.00% para 90 días por defecto
+        }
+
+        // Función para determinar la tasa de interés del BBVA según el monto depositado y el plazo en días
+        function determinarTasaBBVA(montoDeposito, plazoDias) {
+          // TREA mínima de 1 año y TREA máxima de 5.60% para 6 meses
+          if (plazoDias === 180) {
+            return 0.056; // 5.60% para 6 meses
+          } else if (plazoDias === 360) {
+            return 0.05; // TREA mínima para 1 año
+          }
+          // Valor predeterminado en caso de que no se cumplan las condiciones anteriores
+          return 0.05; // TREA mínima para 1 año por defecto
+        }
+      });
+    </script>
+  </body>
+</html>
